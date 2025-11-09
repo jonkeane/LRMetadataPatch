@@ -54,13 +54,45 @@ function testBasic()
                 {
                     type = "static_text",
                     args = {
-                        title = "Pick a Film Shots frame for each Photo"
+                        title = "Match Lightroom photos to reference images from metadata"
+                    }
+                },
+                {
+                    type = "row",
+                    args = {
+                        spacing = 16,
+                        {
+                            type = "column",
+                            args = {
+                                width = 256,
+                                {
+                                    type = "static_text",
+                                    args = {
+                                        title = "Scan from Lightroom",
+                                        font = "<system/bold>"
+                                    }
+                                }
+                            }
+                        },
+                        {
+                            type = "column",
+                            args = {
+                                {
+                                    type = "static_text",
+                                    args = {
+                                        title = "Reference from Crown + Flint",
+                                        font = "<system/bold>"
+                                    }
+                                }
+                            }
+                        }
                     }
                 },
                 {
                     type = "scrolled_view",
                     args = {
-                        height = 576,
+                        height = 576.0,
+                        width = 576.0,
                         {
                             args = {
                                 margin = 16,
@@ -132,9 +164,40 @@ function testWithFrames()
                 },
                 {
                     args = {
-                        title = "Pick a Film Shots frame for each Photo"
+                        title = "Match Lightroom photos to reference images from metadata"
                     },
                     type = "static_text"
+                },
+                {
+                    type = "row",
+                    args = {
+                        spacing = 16,
+                        {
+                            type = "column",
+                            args = {
+                                width = 256,
+                                {
+                                    type = "static_text",
+                                    args = {
+                                        title = "Scan from Lightroom",
+                                        font = "<system/bold>"
+                                    }
+                                }
+                            }
+                        },
+                        {
+                            type = "column",
+                            args = {
+                                {
+                                    type = "static_text",
+                                    args = {
+                                        title = "Reference from Crown + Flint",
+                                        font = "<system/bold>"
+                                    }
+                                }
+                            }
+                        }
+                    }
                 },
                 {
                     args = {
@@ -142,30 +205,47 @@ function testWithFrames()
                             args = {
                                 {
                                     args = {
+                                        spacing = 16,
                                         {
                                             args = {
-                                                height = 256,
-                                                photo = {
-                                                    type = "photo",
-                                                    fileName = "Photo1.arw"
-                                                },
-                                                width = 256
-                                            },
-                                            type = "catalog_photo"
-                                        },
-                                        {
-                                            args = {
-                                                title = "Photo1.arw"
-                                            },
-                                            type = "static_text"
-                                        },
-                                        {
-                                            args = {
+                                                spacing = 0,
                                                 {
                                                     args = {
-                                                        title = "Film frame: "
+                                                        height = 256,
+                                                        photo = {
+                                                            type = "photo",
+                                                            fileName = "Photo1.arw"
+                                                        },
+                                                        width = 256
+                                                    },
+                                                    type = "catalog_photo"
+                                                },
+                                                {
+                                                    args = {
+                                                        title = "Photo1.arw"
                                                     },
                                                     type = "static_text"
+                                                }
+                                            },
+                                            type = "column"
+                                        },
+                                        {
+                                            args = {
+                                                spacing = 0,
+                                                {
+                                                    args = {
+                                                        height = 256,
+                                                        width = 256,
+                                                        value = {
+                                                            key = {
+                                                                bind_to_object = {filmFrameIndex = 1},
+                                                                key = "filmFrameIndex",
+                                                                transform = nil
+                                                            },
+                                                            type = "binding"
+                                                        }
+                                                    },
+                                                    type = "picture"
                                                 },
                                                 {
                                                     args = {
@@ -194,38 +274,54 @@ function testWithFrames()
                                                     type = "popup_menu"
                                                 }
                                             },
-                                            type = "row"
-                                        },
-                                        spacing = 0
+                                            type = "column"
+                                        }
                                     },
-                                    type = "column"
+                                    type = "row"
                                 },
                                 {
                                     args = {
+                                        spacing = 16,
                                         {
                                             args = {
-                                                height = 256,
-                                                photo = {
-                                                    type = "photo",
-                                                    fileName = "Photo2.arw"
-                                                },
-                                                width = 256
-                                            },
-                                            type = "catalog_photo"
-                                        },
-                                        {
-                                            args = {
-                                                title = "Photo2.arw"
-                                            },
-                                            type = "static_text"
-                                        },
-                                        {
-                                            args = {
+                                                spacing = 0,
                                                 {
                                                     args = {
-                                                        title = "Film frame: "
+                                                        height = 256,
+                                                        photo = {
+                                                            type = "photo",
+                                                            fileName = "Photo2.arw"
+                                                        },
+                                                        width = 256
+                                                    },
+                                                    type = "catalog_photo"
+                                                },
+                                                {
+                                                    args = {
+                                                        title = "Photo2.arw"
                                                     },
                                                     type = "static_text"
+                                                }
+                                            },
+                                            type = "column"
+                                        },
+                                        {
+                                            args = {
+                                                spacing = 0,
+                                                {
+                                                    args = {
+                                                        height = 256,
+                                                        width = 256,
+                                                        value = {
+                                                            key = {
+                                                                bind_to_object = {filmFrameIndex = 3},
+                                                                key = "filmFrameIndex",
+                                                                transform = nil
+                                                            },
+                                                            type = "binding"
+                                                        }
+                                                    },
+                                                    type = "picture"
                                                 },
                                                 {
                                                     args = {
@@ -254,18 +350,18 @@ function testWithFrames()
                                                     type = "popup_menu"
                                                 }
                                             },
-                                            type = "row"
-                                        },
-                                        spacing = 0
+                                            type = "column"
+                                        }
                                     },
-                                    type = "column"
+                                    type = "row"
                                 },
                                 margin = 16,
                                 spacing = 0
                             },
                             type = "column"
                         },
-                        height = 576.0
+                        height = 576.0,
+                        width = 576.0
                     },
                     type = "scrolled_view"
                 },
@@ -333,9 +429,40 @@ function testWithFrames_Holders()
                 },
                 {
                     args = {
-                        title = "Pick a Film Shots frame for each Photo"
+                        title = "Match Lightroom photos to reference images from metadata"
                     },
                     type = "static_text"
+                },
+                {
+                    type = "row",
+                    args = {
+                        spacing = 16,
+                        {
+                            type = "column",
+                            args = {
+                                width = 256,
+                                {
+                                    type = "static_text",
+                                    args = {
+                                        title = "Scan from Lightroom",
+                                        font = "<system/bold>"
+                                    }
+                                }
+                            }
+                        },
+                        {
+                            type = "column",
+                            args = {
+                                {
+                                    type = "static_text",
+                                    args = {
+                                        title = "Reference from Crown + Flint",
+                                        font = "<system/bold>"
+                                    }
+                                }
+                            }
+                        }
+                    }
                 },
                 {
                     args = {
@@ -343,30 +470,47 @@ function testWithFrames_Holders()
                             args = {
                                 {
                                     args = {
+                                        spacing = 16,
                                         {
                                             args = {
-                                                height = 256,
-                                                photo = {
-                                                    type = "photo",
-                                                    fileName = "Photo1.arw"
-                                                },
-                                                width = 256
-                                            },
-                                            type = "catalog_photo"
-                                        },
-                                        {
-                                            args = {
-                                                title = "Photo1.arw"
-                                            },
-                                            type = "static_text"
-                                        },
-                                        {
-                                            args = {
+                                                spacing = 0,
                                                 {
                                                     args = {
-                                                        title = "Film frame: "
+                                                        height = 256,
+                                                        photo = {
+                                                            type = "photo",
+                                                            fileName = "Photo1.arw"
+                                                        },
+                                                        width = 256
+                                                    },
+                                                    type = "catalog_photo"
+                                                },
+                                                {
+                                                    args = {
+                                                        title = "Photo1.arw"
                                                     },
                                                     type = "static_text"
+                                                }
+                                            },
+                                            type = "column"
+                                        },
+                                        {
+                                            args = {
+                                                spacing = 0,
+                                                {
+                                                    args = {
+                                                        height = 256,
+                                                        width = 256,
+                                                        value = {
+                                                            key = {
+                                                                bind_to_object = {filmFrameIndex = 1},
+                                                                key = "filmFrameIndex",
+                                                                transform = nil
+                                                            },
+                                                            type = "binding"
+                                                        }
+                                                    },
+                                                    type = "picture"
                                                 },
                                                 {
                                                     args = {
@@ -395,38 +539,54 @@ function testWithFrames_Holders()
                                                     type = "popup_menu"
                                                 }
                                             },
-                                            type = "row"
-                                        },
-                                        spacing = 0
+                                            type = "column"
+                                        }
                                     },
-                                    type = "column"
+                                    type = "row"
                                 },
                                 {
                                     args = {
+                                        spacing = 16,
                                         {
                                             args = {
-                                                height = 256,
-                                                photo = {
-                                                    type = "photo",
-                                                    fileName = "Photo2.arw"
-                                                },
-                                                width = 256
-                                            },
-                                            type = "catalog_photo"
-                                        },
-                                        {
-                                            args = {
-                                                title = "Photo2.arw"
-                                            },
-                                            type = "static_text"
-                                        },
-                                        {
-                                            args = {
+                                                spacing = 0,
                                                 {
                                                     args = {
-                                                        title = "Film frame: "
+                                                        height = 256,
+                                                        photo = {
+                                                            type = "photo",
+                                                            fileName = "Photo2.arw"
+                                                        },
+                                                        width = 256
+                                                    },
+                                                    type = "catalog_photo"
+                                                },
+                                                {
+                                                    args = {
+                                                        title = "Photo2.arw"
                                                     },
                                                     type = "static_text"
+                                                }
+                                            },
+                                            type = "column"
+                                        },
+                                        {
+                                            args = {
+                                                spacing = 0,
+                                                {
+                                                    args = {
+                                                        height = 256,
+                                                        width = 256,
+                                                        value = {
+                                                            key = {
+                                                                bind_to_object = {filmFrameIndex = 3},
+                                                                key = "filmFrameIndex",
+                                                                transform = nil
+                                                            },
+                                                            type = "binding"
+                                                        }
+                                                    },
+                                                    type = "picture"
                                                 },
                                                 {
                                                     args = {
@@ -455,18 +615,18 @@ function testWithFrames_Holders()
                                                     type = "popup_menu"
                                                 }
                                             },
-                                            type = "row"
-                                        },
-                                        spacing = 0
+                                            type = "column"
+                                        }
                                     },
-                                    type = "column"
+                                    type = "row"
                                 },
                                 margin = 16,
                                 spacing = 0
                             },
                             type = "column"
                         },
-                        height = 576.0
+                        height = 576.0,
+                        width = 576.0
                     },
                     type = "scrolled_view"
                 },

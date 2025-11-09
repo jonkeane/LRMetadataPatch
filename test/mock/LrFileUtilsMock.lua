@@ -57,7 +57,15 @@ function M.children(path)
     return results
 end
 
--- Delete a file or directory recursively
+
+-- Check if a file or directory exists
+function M.exists(path)
+    if not path then return false end
+    local f = io.open(path, "r")
+    if f then f:close(); return true end
+    return false
+end
+
 function M.delete(path)
     if not path then return false end
     local cmd = string.format('rm -rf "%s" 2>/dev/null', path)
