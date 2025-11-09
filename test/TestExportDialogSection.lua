@@ -200,7 +200,7 @@ function testSectionForFilterInDialog()
                 },
                 type = "column"
             },
-            title = "Film Shots Metadata"
+            title = "Crown & Flint Metadata"
         }
     )
 end

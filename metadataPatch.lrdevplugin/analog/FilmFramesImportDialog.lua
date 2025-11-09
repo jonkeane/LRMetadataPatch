@@ -66,7 +66,7 @@ local function build (args)
     if updateInfo then
         update_snack = f:row {
             f:static_text {
-                title = "Film Shots Plugin update is available: " .. updateInfo.newVersion,
+                title = "Metadata Patch Plugin update is available: " .. updateInfo.newVersion,
                 text_color = LrColor ("red"),
                 font = "<system/bold>",
             },
@@ -112,7 +112,7 @@ local function build (args)
             },
             f:column {
                 f:static_text {
-                    title = "Reference from Crown + Flint",
+                    title = "Reference from Crown & Flint",
                     font = "<system/bold>",
                 }
             }

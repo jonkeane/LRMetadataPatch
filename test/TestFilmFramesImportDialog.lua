@@ -80,7 +80,7 @@ function testBasic()
                                 {
                                     type = "static_text",
                                     args = {
-                                        title = "Reference from Crown + Flint",
+                                        title = "Reference from Crown & Flint",
                                         font = "<system/bold>"
                                     }
                                 }
@@ -191,7 +191,7 @@ function testWithFrames()
                                 {
                                     type = "static_text",
                                     args = {
-                                        title = "Reference from Crown + Flint",
+                                        title = "Reference from Crown & Flint",
                                         font = "<system/bold>"
                                     }
                                 }
@@ -456,7 +456,7 @@ function testWithFrames_Holders()
                                 {
                                     type = "static_text",
                                     args = {
-                                        title = "Reference from Crown + Flint",
+                                        title = "Reference from Crown & Flint",
                                         font = "<system/bold>"
                                     }
                                 }

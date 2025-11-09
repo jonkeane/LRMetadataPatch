@@ -41,7 +41,7 @@ local function showAnalogImportDialog (roll, bindings, updateInfo)
     log ("Content ready")
 
     return LrDialogs.presentModalDialog {
-        title = "Import Film Shots Data",
+        title = "Import Crown & Flint Data",
         contents = content,
         resizable = false
     }
@@ -59,7 +59,7 @@ local function main (context)
     log ("roll: ", roll, ": ", jsonPath)
 
     if roll == nil and jsonPath then
-        LrDialogs.message ("Couldn't load Film Shots JSON file\n"  .. jsonPath)
+        LrDialogs.message ("Couldn't load Crown & Flint JSON file\n"  .. jsonPath)
         Helpers.cleanupTempDir(tempDir)
         return
     elseif roll == nil and jsonPath == nil then

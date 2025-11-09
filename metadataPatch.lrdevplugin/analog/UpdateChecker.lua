@@ -4,8 +4,8 @@ local VersionUtils = use 'analog.VersionUtils'
 local PluginInfo = use 'Info'
 
 -- TODO: change to github
-local VERSION_URL = "https://storage.googleapis.com/lrplugin.filmlog.leaf500.com/Info.lua"
-local DOWNLOAD_URL = "http://leaf500.com/lightroom-plugin"
+local VERSION_URL = "https://raw.githubusercontent.com/jonkeane/LRMetadataPatch/refs/heads/main/metadataPatch.lrdevplugin/Info.lua"
+local DOWNLOAD_URL = "https://github.com/jonkeane/LRMetadataPatch/releases"
 
 local function loadstring (str)
     if _G.loadstring then

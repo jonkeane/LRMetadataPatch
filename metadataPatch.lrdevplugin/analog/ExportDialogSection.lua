@@ -36,7 +36,7 @@ local function make(f, propertyTable)
     end
 
     return {
-        title = "Film Shots Metadata",
+        title = "Crown & Flint Metadata",
         f:column(column)
     }
 end
