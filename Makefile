@@ -34,33 +34,38 @@ sversion:
 deliver : ${DELIVERY_ARCHIVE_PATH}
 	@echo ALL DONE
 
-${DELIVERY_ARCHIVE_PATH}: ${DELIVERY_DIR}/${REL_PLUGIN} \
-		${DELIVERY_DIR}/${REL_PLUGIN}/Config.txt \
-		${DELIVERY_DIR}/${REL_PLUGIN}/exiftool \
-		${DELIVERY_DIR}/${REL_PLUGIN}/LICENSE \
-		$(LUA_OBJECTS)
+${DELIVERY_ARCHIVE_PATH}: \
+	${DELIVERY_DIR}/${REL_PLUGIN}/Config.txt \
+	${DELIVERY_DIR}/${REL_PLUGIN}/exiftool \
+	${DELIVERY_DIR}/${REL_PLUGIN}/LICENSE \
+	$(LUA_OBJECTS)
 	rm -f ${DELIVERY_ARCHIVE_PATH}
 	cd ${DELIVERY_DIR} && zip -r ${DELIVERY_ARCHIVE} ${REL_PLUGIN}
 	rm -rf ${DELIVERY_DIR}/${REL_PLUGIN}
 
-.PHONY: ${DELIVERY_DIR}/${REL_PLUGIN}
-${DELIVERY_DIR}/${REL_PLUGIN}:
+# Ensure output directory exists and is a directory (stamp file approach)
+${DELIVERY_DIR}/${REL_PLUGIN}/.stamp:
 	rm -rf ${DELIVERY_DIR}/${REL_PLUGIN}
 	mkdir -p ${DELIVERY_DIR}/${REL_PLUGIN}
+	touch $@
 
-${DELIVERY_DIR}/${REL_PLUGIN}/Config.txt:
+${DELIVERY_DIR}/${REL_PLUGIN}/Config.txt: | ${DELIVERY_DIR}/${REL_PLUGIN}/.stamp
 	cp ${DEV_PLUGIN}/Config.txt ${DELIVERY_DIR}/${REL_PLUGIN}
 
-.PHONY: ${DELIVERY_DIR}/${REL_PLUGIN}/exiftool
-${DELIVERY_DIR}/${REL_PLUGIN}/exiftool:
-	cp -r ${DEV_PLUGIN}/exiftool ${DELIVERY_DIR}/${REL_PLUGIN}
+${DELIVERY_DIR}/${REL_PLUGIN}/exiftool: | ${DELIVERY_DIR}/${REL_PLUGIN}/.stamp
+	rm -rf $@
+	cp -R ${DEV_PLUGIN}/exiftool ${DELIVERY_DIR}/${REL_PLUGIN}
 
-${DELIVERY_DIR}/${REL_PLUGIN}/LICENSE:
+${DELIVERY_DIR}/${REL_PLUGIN}/LICENSE: | ${DELIVERY_DIR}/${REL_PLUGIN}/.stamp
 	cp LICENSE ${DELIVERY_DIR}/${REL_PLUGIN}
 
-$(LUA_OBJECTS) : $(DELIVERY_DIR)/$(REL_PLUGIN)/%.lua : $(DEV_PLUGIN)/%.lua
+# Copy all Lua files as plain text (no compilation)
+$(DELIVERY_DIR)/$(REL_PLUGIN)/%.lua : $(DEV_PLUGIN)/%.lua | ${DELIVERY_DIR}/${REL_PLUGIN}/.stamp
 	mkdir -p $(shell dirname $@)
-	${LUAC} -o $@ $<
+	cp $< $@
+
+# Ensure Lua object compilation waits for directory creation
+$(LUA_OBJECTS): | ${DELIVERY_DIR}/${REL_PLUGIN}/.stamp
 
 .PHONY: test
 test:
