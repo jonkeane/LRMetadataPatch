@@ -333,6 +333,29 @@ local function findFirstJson (dir)
     return nil
 end
 
+local function attachReferenceImagePathsToFrames (roll, tempDir)
+    if not roll or not tempDir or not roll.frames then
+        return
+    end
+    
+    local LrPathUtils = import 'LrPathUtils'
+    local LrFileUtils = import 'LrFileUtils'
+    
+    -- Try common image extensions
+    local extensions = {".jpg", ".jpeg", ".JPG", ".JPEG"}
+    
+    for frameIndex, frame in pairs(roll.frames) do
+        for _, ext in ipairs(extensions) do
+            local imagePath = LrPathUtils.child(tempDir, frameIndex .. ext)
+            if LrFileUtils.exists(imagePath) then
+                frame.referenceImagePath = imagePath
+                log ('Attached image for frame ', frameIndex, ': ', imagePath)
+                break
+            end
+        end
+    end
+end
+
 local function fromZipFile (zipPath)
     log ('Processing zip: ', zipPath)
     local tempDir = unzipToTemp (zipPath)
@@ -343,6 +366,10 @@ local function fromZipFile (zipPath)
         return nil, nil, tempDir
     end
     local roll = fromFile (jsonInside)
+    
+    -- Attach image paths to frames
+    attachReferenceImagePathsToFrames (roll, tempDir)
+    
     return roll, jsonInside, tempDir
 end
 

@@ -49,6 +49,13 @@ local FactoryMock = {
         }
     end,
 
+    picture = function (self, args) 
+        return {
+            type = 'picture',
+            args = args
+        }
+    end,
+
     popup_menu = function (self, args) 
         return {
             type = 'popup_menu',

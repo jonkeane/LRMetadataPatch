@@ -1,5 +1,6 @@
 require 'Use'
 
+local log = require 'Logger' ("FilmFramesImportDialog")
 local LightroomMetadata = use 'analog.LightroomMetadata'
 
 local function makeFrameMenuItems (roll)
@@ -46,9 +47,31 @@ local function build (args)
     local roll = args.roll
     local bindings = args.bindings
 
-    local f = LrView.osFactory()  
+    log("Starting to sort bindings by filename")
+    log("Number of bindings:", #bindings)
+    
+    -- Pre-compute filenames for each binding
+    local filenameCache = {}
+    for i, binding in ipairs(bindings) do
+        local filename = LightroomMetadata.make(binding.photo):fileName()
+        log("Pre-computing filename for binding", i, ":", filename)
+        filenameCache[binding] = filename
+    end
+    
+    -- Sort bindings in place by pre-computed filename
+    table.sort(bindings, function(a, b)
+        local aName = filenameCache[a]
+        local bName = filenameCache[b]
+        log("Comparing:", aName, "vs", bName)
+        return aName < bName
+    end)
+    
+    log("Sorted bindings order:")
+    for i, binding in ipairs(bindings) do
+        log(i, ":", filenameCache[binding])
+    end
 
-    local update_snack = f:static_text {
+    local f = LrView.osFactory()    local update_snack = f:static_text {
         title = ""
     }
 
@@ -75,42 +98,74 @@ local function build (args)
         spacing = f:dialog_spacing(),
         update_snack,
         f:static_text {
-            title = "Pick a Film Shots frame for each Photo"
+            title = "Match Lightroom photos to reference images from metadata",
+        },
+        f:row {
+            spacing = 16,
+            f:column {
+                width = 256,
+                f:static_text {
+                    title = "Scan from Lightroom",
+                    font = "<system/bold>",
+                }
+            },
+            f:column {
+                f:static_text {
+                    title = "Reference from Crown + Flint",
+                    font = "<system/bold>",
+                }
+            }
         },
         f:scrolled_view {
             height = size.height * 0.75,
-            f:column (
-                ForEach (bindings, {
-                        margin = 16,
-                        spacing = f:dialog_spacing(),
-                    },  
-                    function (pair)
-                        return f:column {
-                            spacing = 0,
-                            f:catalog_photo {
-                                photo = pair.photo,
-                                width = 256,
-                                height = 256,
-                            },
-                            f:static_text {
-                                title = LightroomMetadata.make (pair.photo):fileName ()
-                            },
-                            f:row {
-                                f:static_text {
-                                    title = "Film frame: "
-                                },
-                                f:popup_menu {
-                                    value = LrView.bind {
-                                        key = 'filmFrameIndex',
-                                        bind_to_object = pair.binding,
+            width = 256 * 2.25,
+                f:column (
+                    ForEach (bindings, {
+                            margin = 16,
+                            spacing = f:dialog_spacing(),
+                        },  
+                        function (pair)
+                            return f:row {
+                                spacing = 16,
+                                f:column {
+                                    spacing = 0,
+                                    f:catalog_photo {
+                                        photo = pair.photo,
+                                        width = 256,
+                                        height = 256,
                                     },
-                                    items = filmFrameItems
+                                    f:static_text {
+                                        title = LightroomMetadata.make (pair.photo):fileName ()
+                                    }
+                                },
+                                f:column {
+                                    spacing = f:dialog_spacing(),
+                                    f:picture {
+                                        value = LrView.bind {
+                                            key = 'filmFrameIndex',
+                                            bind_to_object = pair.binding,
+                                            transform = function (value, fromTable)
+                                                if value and roll.frames[value] then
+                                                    return roll.frames[value].referenceImagePath
+                                                end
+                                                return nil
+                                            end
+                                        },
+                                        width = 256,
+                                        height = 256,
+                                    },
+                                    f:popup_menu {
+                                        value = LrView.bind {
+                                            key = 'filmFrameIndex',
+                                            bind_to_object = pair.binding,
+                                        },
+                                        items = filmFrameItems
+                                    }
                                 }
                             }
-                        }
-                    end
+                        end
+                    )
                 )
-            )
         }
     }
 end
