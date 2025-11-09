@@ -9,6 +9,12 @@ on:
 
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
+    inputs:
+      enable_logging:
+        description: "Enable verbose logging (set ENABLE_LOGGING=1)"
+        type: boolean
+        default: false
+        required: false
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
@@ -29,5 +35,6 @@ jobs:
       # Runs a single command using the runners shell
       - name: test
         env:
-          ENABLE_LOGGING: 1
+          # ENABLE_LOGGING will be 1 only if manually dispatched with enable_logging=true; otherwise 0
+          ENABLE_LOGGING: ${{ github.event.inputs.enable_logging == 'true' && '1' || '0' }}
         run: make test
