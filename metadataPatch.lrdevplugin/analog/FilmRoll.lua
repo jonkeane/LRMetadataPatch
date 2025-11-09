@@ -2,41 +2,8 @@ local log = require 'Logger' ("FilmRoll")
 
 require 'Use'
 
+local Helpers = use 'analog.FileHelpers'
 local json = use 'lib.dkjson'
-
--- Debug helper to list directory contents (limited) to aid CI troubleshooting
-local function debugListDir(path, label, limit)
-    limit = limit or 50
-    local ok, LrFileUtils = pcall(import, 'LrFileUtils')
-    if not ok or not LrFileUtils or not LrFileUtils.children then
-        return
-    end
-    local entries = LrFileUtils.children(path) or {}
-    local shown = 0
-    for _, e in ipairs(entries) do
-        shown = shown + 1
-        if shown > limit then
-            break
-        end
-    end
-end
-
-local function getCurrentFolder (catalog) 
-    if catalog.getActiveSources then
-        log ("getCurrentFolder")
-        local sources = catalog:getActiveSources()
-        for _, s in ipairs (sources) do            
-            if s.type then
-                log (s:type())
-                if s:type() == 'LrFolder' then
-                    return s
-                end
-            end
-        end
-    end
-
-    return nil
-end
 
 -- Convert numeric exposure time (seconds) to common shutter speed string (e.g. 0.008 -> "1/125")
 local function shutterToString (t)
@@ -74,6 +41,72 @@ local function intIfWhole(n)
     return n
 end
 
+-- Build lens name from raw.LensMake, raw.LensModel, and raw.LensInfo
+-- Removes duplicate strings that appear in LensInfo if they're already in LensMake or LensModel
+local function buildLensName(raw)
+    if not raw then return nil end
+    
+    local lensMake = raw.LensMake or ""
+    local lensModel = raw.LensModel or ""
+    local lensInfo = raw.LensInfo or ""
+    local focalLength = raw.FocalLength or ""
+
+    -- Start with make and model
+    local parts = {}
+    if lensMake ~= "" then
+        table.insert(parts, lensMake)
+    end
+    if lensModel ~= "" then
+        table.insert(parts, lensModel)
+    end
+    
+    -- Only add focal length if it's not already present in make, model, or info
+    if focalLength ~= "" then
+        local focalLengthStr = tostring(focalLength)
+        local alreadyPresent = false
+        if lensMake:find(focalLengthStr, 1, true) or 
+           lensModel:find(focalLengthStr, 1, true) or 
+           lensInfo:find(focalLengthStr, 1, true) then
+            alreadyPresent = true
+        end
+        if not alreadyPresent then
+            table.insert(parts, focalLengthStr .. "mm")
+        end
+    end
+
+    -- Process lensInfo: remove any words that already appear in make, model, or focal length
+    if lensInfo ~= "" then
+        local infoWords = {}
+        local focalLengthStr = focalLength ~= "" and tostring(focalLength) or nil
+        for word in lensInfo:gmatch("%S+") do
+            local isDuplicate = false
+            -- Check if this word appears in lensMake, lensModel, or is the focal length
+            if lensMake:find(word, 1, true) or lensModel:find(word, 1, true) then
+                isDuplicate = true
+            end
+            -- Check if word contains focal length as substring (with or without "mm")
+            if focalLengthStr then
+                if word:find(focalLengthStr, 1, true) or word:find(focalLengthStr .. "mm", 1, true) then
+                    isDuplicate = true
+                end
+            end
+            if not isDuplicate then
+                table.insert(infoWords, word)
+            end
+        end
+        -- Add remaining words from lensInfo
+        if #infoWords > 0 then
+            table.insert(parts, table.concat(infoWords, " "))
+        end
+    end
+
+    if #parts == 0 then
+        return nil
+    end
+
+    return table.concat(parts, " ")
+end
+
 local function buildRollFromFrameArray (arr)
     if not arr or #arr == 0 then return nil end
 
@@ -97,13 +130,13 @@ local function buildRollFromFrameArray (arr)
                     frameIndex = idx,
                     aperture = tonumber (raw.FNumber) or tonumber (raw.ApertureValue),
                     focalLength = intIfWhole(raw.FocalLength),
-                    lensName = raw.LensModel or raw.LensInfo,
+                    lensName = buildLensName(raw),
                     localTime = normalizeDateTime (raw.DateTimeOriginal),
                     latitude = raw.GPSLatitude,
                     longitude = raw.GPSLongitude,
                     boxIsoSpeed = intIfWhole(raw.ISO or raw.ISOSpeed or raw.StandardOutputSensitivity),
                     ratedIsoSpeed = intIfWhole(raw.ISO or raw.ISOSpeed or raw.RecommendedExposureIndex),
-                    emulsionName = raw.DocumentName or raw.Description,
+                    emulsionName = (raw.Keywords and raw.Keywords[1]) or nil or raw.DocumentName or raw.Description,
                     shutterSpeed = chosenShutter
                 }
                 -- Frame 4 legacy expected time differs from new dataset; preserve test expectation if different
@@ -123,25 +156,38 @@ local function buildRollFromFrameArray (arr)
 
     -- Construct synthetic roll metadata matching expectations in tests
     local roll = {
-        -- name = "Box Hill", -- constant as per existing tests
-        -- mode = 'R',
-        -- status = 'P',
-        -- uuid = '581c0629-3810-464d-9382-7f095f2e9e2d',
-        -- timestamp = 1589026694008, -- keep original expected timestamp
         boxIsoSpeed = intIfWhole(first.boxIsoSpeed),
         ratedIsoSpeed = intIfWhole(first.ratedIsoSpeed),
-        cameraName = arr[1].Model,
-        defaultLensName = first.lensName,
-        defaultFocalLength = first.focalLength,
-        defaultAperture = first.aperture,
-        defaultShutterSpeed = first.shutterSpeed,
+        cameraName = arr[1].Make .. " " .. arr[1].Model,
         emulsionName = first.emulsionName,
-        -- formatName = '120/6x6', -- constant from previous format
         frameCount = maxIndex,
         frames = frames
     }
 
     return roll
+end
+
+local function attachReferenceImagePathsToFrames (roll, tempDir)
+    if not roll or not tempDir or not roll.frames then
+        return
+    end
+    
+    local LrPathUtils = import 'LrPathUtils'
+    local LrFileUtils = import 'LrFileUtils'
+    
+    -- Try common image extensions
+    local extensions = {".jpg", ".jpeg", ".JPG", ".JPEG"}
+    
+    for frameIndex, frame in pairs(roll.frames) do
+        for _, ext in ipairs(extensions) do
+            local imagePath = LrPathUtils.child(tempDir, frameIndex .. ext)
+            if LrFileUtils.exists(imagePath) then
+                frame.referenceImagePath = imagePath
+                log ('Attached image for frame ', frameIndex, ': ', imagePath)
+                break
+            end
+        end
+    end
 end
 
 local function fromJson (jsonString)
@@ -182,22 +228,10 @@ local function fromJson (jsonString)
     return nil
 end
 
-local function readFile (path)
-    local str = nil
-
-    local file = io.open (path)
-    if file then
-        str = file:read("*all")
-        file:close ()
-    end
-
-    return str
-end
-
 local function fromFile (path)
     log ("JSON: ", path)
 
-    local jsonString = readFile (path)
+    local jsonString = Helpers.readFile (path)
 
     if jsonString then
         return fromJson (jsonString)
@@ -208,177 +242,13 @@ local function fromFile (path)
     return nil
 end
 
--- Helpers for new zip-first workflow
--- Temp directory creation using Lightroom SDK utilities (no shell fallback required at runtime).
-local function createTempDir ()
-    local LrPathUtils = import 'LrPathUtils'
-    local LrFileUtils = import 'LrFileUtils'
-    local LrDate = import 'LrDate'
-    local LrMD5 = import 'LrMD5'
-
-    local tempRoot = LrPathUtils.getStandardFilePath('temp')
-    local uniqueName = string.format(
-        'lrplugin_%d_%s',
-        LrDate.currentTime(),
-        LrMD5.digest(tostring(math.random()))
-    )
-    local child = LrPathUtils.child or function(a,b) return a .. '/' .. b end
-    local tempFolder = child(tempRoot, uniqueName)
-    local ok = LrFileUtils.createDirectory(tempFolder)
-    if ok then
-        return tempFolder
-    end
-    return nil
-end
-
-local function findFirstZip (folderPath)
-    local LrFileUtils = import 'LrFileUtils'
-    local LrPathUtils = import 'LrPathUtils'
-
-    -- Try non-recursive listing first
-    if LrFileUtils.children then
-        local children = LrFileUtils.children(folderPath) or {}
-        for _, p in ipairs(children) do
-            if p:lower():match('%.zip$') then
-                return p
-            end
-        end
-    else
-        log('findFirstZip: LrFileUtils.children unavailable')
-    end
-
-    -- Fallback to any iterator provided by SDK
-    local iter = (LrFileUtils.files and LrFileUtils.files(folderPath)) or
-                 (LrFileUtils.recursiveFiles and LrFileUtils.recursiveFiles(folderPath))
-    if type(iter) == 'function' then
-        for p in iter do
-            if type(p) == 'string' and p:lower():match('%.zip$') then
-                return p
-            end
-        end
-    elseif type(iter) == 'table' then
-        for _, p in ipairs(iter) do
-            if type(p) == 'string' and p:lower():match('%.zip$') then
-                return p
-            end
-        end
-    end
-    log('findFirstZip: none found in', folderPath)
-    return nil
-end
-
-local function unzipToTemp (zipPath)
-    local tempDir = createTempDir()
-    if not tempDir then
-        log('Temp dir creation failed')
-        return nil
-    end
-
-    local LrTasks = import 'LrTasks'
-
-    -- Helper: escape single quotes for PowerShell literal single-quoted string
-    local function pwshQuote(p)
-        return (p or ''):gsub("'", "''")
-    end
-
-    local cmd
-    if WIN_ENV then
-        cmd = string.format(
-            "powershell -NoLogo -NonInteractive -Command \"Expand-Archive -LiteralPath '%s' -DestinationPath '%s' -Force\"",
-            pwshQuote(zipPath), pwshQuote(tempDir)
-        )
-    else
-        cmd = string.format('/usr/bin/unzip -qq -o "%s" -d "%s"', zipPath, tempDir)
-    end
-
-    log('unzipToTemp: cmd:', cmd)
-    local exitCode = LrTasks.execute(cmd)
-    log('unzipToTemp: exit code:', tostring(exitCode))
-
-    return tempDir
-end
-
--- Clean up a temporary directory created by createTempDir
-local function cleanupTempDir (tempDir)
-    if not tempDir then return end
-    
-    local LrFileUtils = import 'LrFileUtils'
-    
-    log('Cleaning up temp dir: ', tempDir)
-    
-    -- Recursively delete the temp directory
-    local success = LrFileUtils.delete(tempDir)
-end
-
--- Recursively locate the first *.json file using Lightroom SDK file utilities instead of shell find.
-local function findFirstJson (dir)
-    local LrFileUtils = import 'LrFileUtils'
-    local LrPathUtils = import 'LrPathUtils'
-
-    -- Helper to normalize child paths: Lightroom may return names, not full paths
-    local function toFullPath(base, p)
-        if type(p) ~= 'string' then return nil end
-        if p:match('^/') or p:match('^%a:[/\\]') then
-            return p
-        end
-        local child = (LrPathUtils.child and LrPathUtils.child(base, p)) or (base .. '/' .. p)
-        return child
-    end
-
-    -- recurse through files and find json files
-    local iter = (LrFileUtils.recursiveFiles and LrFileUtils.recursiveFiles(dir)) or nil
-    if iter then
-        if type(iter) == 'function' then
-            for p in iter do
-                local full = toFullPath(dir, p)
-                if type(full) == 'string' and full:lower():match('%.json$') then
-                    return full
-                end
-            end
-        elseif type(iter) == 'table' then
-            for _, p in ipairs(iter) do
-                local full = toFullPath(dir, p)
-                if type(full) == 'string' and full:lower():match('%.json$') then
-                    return full
-                end
-            end
-        end
-    end
-
-    return nil
-end
-
-local function attachReferenceImagePathsToFrames (roll, tempDir)
-    if not roll or not tempDir or not roll.frames then
-        return
-    end
-    
-    local LrPathUtils = import 'LrPathUtils'
-    local LrFileUtils = import 'LrFileUtils'
-    
-    -- Try common image extensions
-    local extensions = {".jpg", ".jpeg", ".JPG", ".JPEG"}
-    
-    for frameIndex, frame in pairs(roll.frames) do
-        for _, ext in ipairs(extensions) do
-            local imagePath = LrPathUtils.child(tempDir, frameIndex .. ext)
-            if LrFileUtils.exists(imagePath) then
-                frame.referenceImagePath = imagePath
-                log ('Attached image for frame ', frameIndex, ': ', imagePath)
-                break
-            end
-        end
-    end
-end
-
 local function fromZipFile (zipPath)
     log ('Processing zip: ', zipPath)
-    local tempDir = unzipToTemp (zipPath)
+    local tempDir = Helpers.unzipToTemp (zipPath)
     if not tempDir then return nil, nil, nil end
-    local jsonInside = findFirstJson (tempDir)
+    local jsonInside = Helpers.findFirstJson (tempDir)
     if not jsonInside then
         log ('No JSON inside zip')
-        debugListDir(tempDir, 'zip contents (no json)')
         return nil, nil, tempDir
     end
     log('fromZipFile: jsonInside path', jsonInside)
@@ -402,8 +272,7 @@ local function fromLrFolder (LrPathUtils, folder)
         local tempDir = nil
 
         log ('Searching for any ZIP in: ', folderPath)
-        debugListDir(folderPath, 'folder before zip search', 30)
-        local firstZip = findFirstZip (folderPath)
+    local firstZip = Helpers.findFirstZip (folderPath)
         if firstZip then
             log ('Found ZIP file: ', firstZip)
             local roll, extractedJson, extractedTempDir = fromZipFile (firstZip)
@@ -421,7 +290,7 @@ end
 
 local function fromCatalog (LrPathUtils, catalog)
     if catalog then
-        local folder = getCurrentFolder (catalog)
+        local folder = Helpers.getCurrentFolder (catalog)
 
         if not folder then 
             log ("Current folder nil")
@@ -441,11 +310,9 @@ return {
         SET = 'HS'
     },
 
-    fromJson = fromJson,
-    fromFile = fromFile,
     fromLrFolder = fromLrFolder,
     fromCatalog = fromCatalog,
-    unzipToTemp = unzipToTemp,
-    findFirstJson = findFirstJson,
-    cleanupTempDir = cleanupTempDir
+    fromJson = fromJson,
+    fromFile = fromFile,
+    buildLensName = buildLensName,
 }

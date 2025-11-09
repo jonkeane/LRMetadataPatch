@@ -2,6 +2,7 @@ local lu = require 'luaunit'
 require 'mock.ImportMock'
 local MetadataBindingTable = require 'analog.MetadataBindingTable'
 local FilmRoll = require 'analog.FilmRoll'
+local Helpers = require 'analog.FileHelpers'
 
 local LrFolderMock = require 'mock.LrFolderMock'
 
@@ -20,9 +21,9 @@ local LrBindingMock = {
 
 -- Helper: unzip fixture and return roll built from frames-only JSON inside zip
 local function unzipFixtureRoll(zipPath)
-    local tempDir = FilmRoll.unzipToTemp(zipPath)
+    local tempDir = Helpers.unzipToTemp(zipPath)
     if not tempDir then return nil, nil end
-    local jsonPath = FilmRoll.findFirstJson(tempDir)
+    local jsonPath = Helpers.findFirstJson(tempDir)
     if not jsonPath then return nil, tempDir end
 
     return FilmRoll.fromFile(jsonPath), tempDir
@@ -279,14 +280,14 @@ function testApplyNilFrames ()
     local roll, tempDir = unzipFixtureRoll('test/data/Ektar101.zip')
     roll.frames = nil
     MetadataBindingTable.apply (roll, {})
-    FilmRoll.cleanupTempDir(tempDir)
+    Helpers.cleanupTempDir(tempDir)
 end
 
 function testApplyEmptyBindings ()
     local roll, tempDir = unzipFixtureRoll('test/data/Ektar101.zip')
     
     MetadataBindingTable.apply (roll, {})
-    FilmRoll.cleanupTempDir(tempDir)
+    Helpers.cleanupTempDir(tempDir)
 end
 
 
@@ -335,7 +336,7 @@ function testApplyNoBindings ()
         stackPositionInFolder=1
     })
     
-    FilmRoll.cleanupTempDir(tempDir)
+    Helpers.cleanupTempDir(tempDir)
 end
 
 function testApplyBasic ()
@@ -376,15 +377,15 @@ function testApplyBasic ()
         fileName="file1.jpeg",
         stackPositionInFolder=1,
 
-        Roll_CameraName="Rolleiflex T",
+        Roll_CameraName="Hasselblad Rolleiflex T",
 
         Frame_Index="1",
         Frame_BoxISO="100",
-        Frame_EmulsionName="Fujifilm Acros",
+        Frame_EmulsionName="Kodak Ektar 100",
         Frame_FStop="8",
         Frame_FocalLength="75",
         Frame_Latitude="51.2684547",
-        Frame_LensName="Tessar 75mm F3.5",
+        Frame_LensName="Carl Zeiss Tessar 75mm F3.5",
         Frame_LocalTimeIso8601="2020-05-09T13:21:34",
         Frame_Longitude="-0.3264871",
         Frame_RatedISO="100",
@@ -395,15 +396,15 @@ function testApplyBasic ()
         fileName="file2.jpeg",
         stackPositionInFolder=1,
 
-        Roll_CameraName="Rolleiflex T",
+        Roll_CameraName="Hasselblad Rolleiflex T",
 
         Frame_Index="2",
         Frame_BoxISO="100",
-        Frame_EmulsionName="Fujifilm Acros",
+        Frame_EmulsionName="Kodak Ektar 100",
         Frame_FStop="16",
         Frame_FocalLength="75",
         Frame_Latitude="52.444444",
-        Frame_LensName="Tessar 75mm F3.5",
+        Frame_LensName="Carl Zeiss Tessar 75mm F3.5",
         Frame_LocalTimeIso8601="2020-05-09T15:44:11",
         Frame_Longitude="1.2222",
         Frame_RatedISO="100",
@@ -414,22 +415,22 @@ function testApplyBasic ()
         fileName="file3.jpeg",
         stackPositionInFolder=1,
 
-        Roll_CameraName="Rolleiflex T",
+        Roll_CameraName="Hasselblad Rolleiflex T",
 
         Frame_Index="3",
         Frame_BoxISO="100",
-        Frame_EmulsionName="Fujifilm Acros",
+        Frame_EmulsionName="Kodak Ektar 100",
         Frame_FStop="5.6",
         Frame_FocalLength="75",
         Frame_Latitude="54.33333",
-        Frame_LensName="Tessar 75mm F3.5",
+        Frame_LensName="Carl Zeiss Tessar 75mm F3.5",
         Frame_LocalTimeIso8601="2020-05-09T13:21:35",
         Frame_Longitude="-1.444555",
         Frame_RatedISO="100",
         Frame_Shutter="1/250",
     })
 
-    FilmRoll.cleanupTempDir(tempDir)
+    Helpers.cleanupTempDir(tempDir)
 end
 
 function testApplyBasic_Holders ()
@@ -473,15 +474,15 @@ function testApplyBasic_Holders ()
         fileName="file1.jpeg",
         stackPositionInFolder=1,
 
-        Roll_CameraName="Rolleiflex T",
+        Roll_CameraName="Hasselblad Rolleiflex T",
 
         Frame_Index="1",
         Frame_BoxISO="100",
-        Frame_EmulsionName="Fujifilm Acros",
+        Frame_EmulsionName="Kodak Ektar 100",
         Frame_FStop="8",
         Frame_FocalLength="75",
         Frame_Latitude="51.2684547",
-        Frame_LensName="Tessar 75mm F3.5",
+        Frame_LensName="Carl Zeiss Tessar 75mm F3.5",
         Frame_LocalTimeIso8601="2020-05-09T13:21:34",
         Frame_Longitude="-0.3264871",
         Frame_RatedISO="100",
@@ -492,15 +493,15 @@ function testApplyBasic_Holders ()
         fileName="file2.jpeg",
         stackPositionInFolder=1,
 
-        Roll_CameraName="Rolleiflex T",
+        Roll_CameraName="Hasselblad Rolleiflex T",
 
         Frame_Index="2",
         Frame_BoxISO="100",
-        Frame_EmulsionName="Fujifilm Acros",
+        Frame_EmulsionName="Kodak Ektar 100",
         Frame_FStop="16",
         Frame_FocalLength="75",
         Frame_Latitude="52.444444",
-        Frame_LensName="Tessar 75mm F3.5",
+        Frame_LensName="Carl Zeiss Tessar 75mm F3.5",
         Frame_LocalTimeIso8601="2020-05-09T15:44:11",
         Frame_Longitude="1.2222",
         Frame_RatedISO="100",
@@ -511,22 +512,22 @@ function testApplyBasic_Holders ()
         fileName="file3.jpeg",
         stackPositionInFolder=1,
 
-        Roll_CameraName="Rolleiflex T",
+        Roll_CameraName="Hasselblad Rolleiflex T",
 
         Frame_Index="3",
         Frame_BoxISO="100",
-        Frame_EmulsionName="Fujifilm Acros",
+        Frame_EmulsionName="Kodak Ektar 100",
         Frame_FStop="5.6",
         Frame_FocalLength="75",
         Frame_Latitude="54.33333",
-        Frame_LensName="Tessar 75mm F3.5",
+        Frame_LensName="Carl Zeiss Tessar 75mm F3.5",
         Frame_LocalTimeIso8601="2020-05-09T13:21:35",
         Frame_Longitude="-1.444555",
         Frame_RatedISO="100",
         Frame_Shutter="1/250",
     })
 
-    FilmRoll.cleanupTempDir(tempDir)
+    Helpers.cleanupTempDir(tempDir)
 end
 
 os.exit(lu.LuaUnit.run())

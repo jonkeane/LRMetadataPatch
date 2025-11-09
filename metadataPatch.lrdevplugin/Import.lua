@@ -13,6 +13,7 @@ require 'Use'
 
 local AnalogMetadata = use 'analog.AnalogMetadata'
 local FilmRoll = use 'analog.FilmRoll'
+local Helpers = use 'analog.FileHelpers'
 local FilmFramesImportDialog = use 'analog.FilmFramesImportDialog'
 local UpdateChecker = use 'analog.UpdateChecker'
 local MetadataBindingTable = use 'analog.MetadataBindingTable'
@@ -59,11 +60,11 @@ local function main (context)
 
     if roll == nil and jsonPath then
         LrDialogs.message ("Couldn't load Film Shots JSON file\n"  .. jsonPath)
-        FilmRoll.cleanupTempDir(tempDir)
+        Helpers.cleanupTempDir(tempDir)
         return
     elseif roll == nil and jsonPath == nil then
         LrDialogs.message ("Please select a folder first")
-        FilmRoll.cleanupTempDir(tempDir)
+        Helpers.cleanupTempDir(tempDir)
         return
     end
 
@@ -79,7 +80,7 @@ local function main (context)
     end
 
     -- Clean up temp directory after dialog closes
-    FilmRoll.cleanupTempDir(tempDir)
+    Helpers.cleanupTempDir(tempDir)
 
     log ("DONE")
 end
