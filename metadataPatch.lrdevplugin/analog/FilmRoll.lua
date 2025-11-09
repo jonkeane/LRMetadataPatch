@@ -4,6 +4,28 @@ require 'Use'
 
 local json = use 'lib.dkjson'
 
+-- Debug helper to list directory contents (limited) to aid CI troubleshooting
+local function debugListDir(path, label, limit)
+    limit = limit or 50
+    local ok, LrFileUtils = pcall(import, 'LrFileUtils')
+    if not ok or not LrFileUtils or not LrFileUtils.children then
+        log('debugListDir: LrFileUtils.children unavailable for', path)
+        return
+    end
+    local entries = LrFileUtils.children(path) or {}
+    log('DIR LIST BEGIN', label or path, 'count=', #entries)
+    local shown = 0
+    for _, e in ipairs(entries) do
+        shown = shown + 1
+        if shown > limit then
+            log('... truncated after', limit, 'entries')
+            break
+        end
+        log('DIR ENTRY', e)
+    end
+    log('DIR LIST END', label or path)
+end
+
 local function getCurrentFolder (catalog) 
     if catalog.getActiveSources then
         log ("getCurrentFolder")
@@ -209,8 +231,10 @@ local function createTempDir ()
     local tempFolder = child(tempRoot, uniqueName)
     local ok = LrFileUtils.createDirectory(tempFolder)
     if ok then
+        log('createTempDir: created', tempFolder)
         return tempFolder
     end
+    log('createTempDir: failed for', tempFolder)
     return nil
 end
 
@@ -220,11 +244,17 @@ local function findFirstZip (folderPath)
 
     -- Try non-recursive listing first
     if LrFileUtils.children then
-        for _, p in ipairs(LrFileUtils.children(folderPath) or {}) do
+        local children = LrFileUtils.children(folderPath) or {}
+        log('findFirstZip: scanning children count=', #children)
+        for _, p in ipairs(children) do
+            log('findFirstZip: child', p)
             if p:lower():match('%.zip$') then
+                log('findFirstZip: found zip', p)
                 return p
             end
         end
+    else
+        log('findFirstZip: LrFileUtils.children unavailable')
     end
 
     -- Fallback to any iterator provided by SDK
@@ -233,16 +263,19 @@ local function findFirstZip (folderPath)
     if type(iter) == 'function' then
         for p in iter do
             if type(p) == 'string' and p:lower():match('%.zip$') then
+                log('findFirstZip: found zip via iterator', p)
                 return p
             end
         end
     elseif type(iter) == 'table' then
         for _, p in ipairs(iter) do
             if type(p) == 'string' and p:lower():match('%.zip$') then
+                log('findFirstZip: found zip via table', p)
                 return p
             end
         end
     end
+    log('findFirstZip: none found in', folderPath)
     return nil
 end
 
@@ -270,9 +303,14 @@ local function unzipToTemp (zipPath)
         cmd = string.format('/usr/bin/unzip -qq -o "%s" -d "%s"', zipPath, tempDir)
     end
 
-    log('Unzip cmd: ', cmd)
+    log('unzipToTemp: zipPath exists?', zipPath, '->', tostring((io.open(zipPath) and true) or false))
+    log('unzipToTemp: cmd:', cmd)
     local exitCode = LrTasks.execute(cmd)
-    log('Unzip exit code: ', tostring(exitCode))
+    log('unzipToTemp: exit code:', tostring(exitCode))
+    if exitCode ~= 0 then
+        log('unzipToTemp: NON-ZERO exit code, listing tempDir (may be empty)')
+    end
+    debugListDir(tempDir, 'post-unzip tempDir')
 
     return tempDir
 end
@@ -313,10 +351,12 @@ local function findFirstJson (dir)
     -- 1) Try recursive file iterators if available (fast path)
     local iter = (LrFileUtils.recursiveFiles and LrFileUtils.recursiveFiles(dir)) or nil
     if iter then
+        log('findFirstJson: recursiveFiles iterator available for', dir)
         if type(iter) == 'function' then
             for p in iter do
                 local full = toFullPath(dir, p)
                 if type(full) == 'string' and full:lower():match('%.json$') then
+                    log('findFirstJson: found json (function iter)', full)
                     return full
                 end
             end
@@ -324,10 +364,12 @@ local function findFirstJson (dir)
             for _, p in ipairs(iter) do
                 local full = toFullPath(dir, p)
                 if type(full) == 'string' and full:lower():match('%.json$') then
+                    log('findFirstJson: found json (table iter)', full)
                     return full
                 end
             end
         end
+        log('findFirstJson: no json found via recursiveFiles in', dir)
     end
 
     return nil
@@ -363,9 +405,16 @@ local function fromZipFile (zipPath)
     local jsonInside = findFirstJson (tempDir)
     if not jsonInside then
         log ('No JSON inside zip')
+        debugListDir(tempDir, 'zip contents (no json)')
         return nil, nil, tempDir
     end
+    log('fromZipFile: jsonInside path', jsonInside)
     local roll = fromFile (jsonInside)
+    if not roll then
+        log('fromZipFile: roll parse failed for', jsonInside)
+    else
+        log('fromZipFile: roll frameCount', roll.frameCount)
+    end
     
     -- Attach image paths to frames
     attachReferenceImagePathsToFrames (roll, tempDir)
@@ -380,14 +429,17 @@ local function fromLrFolder (LrPathUtils, folder)
         local tempDir = nil
 
         log ('Searching for any ZIP in: ', folderPath)
+        debugListDir(folderPath, 'folder before zip search', 30)
         local firstZip = findFirstZip (folderPath)
         if firstZip then
             log ('Found ZIP file: ', firstZip)
             local roll, extractedJson, extractedTempDir = fromZipFile (firstZip)
             tempDir = extractedTempDir
             if roll then
+                log('fromLrFolder: returning roll with frameCount', roll.frameCount, 'json=', extractedJson, 'tempDir=', tempDir)
                 return roll, extractedJson, folder, tempDir
             end
+            log('fromLrFolder: zip processing yielded no roll; extractedJson=', extractedJson, 'tempDir=', tempDir)
         end
 
         -- No valid asset found

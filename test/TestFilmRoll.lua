@@ -229,7 +229,6 @@ function testFromCatalog_Basic ()
     local roll, path, folder1, tempDir = FilmRoll.fromCatalog({}, catalog)
 
     lu.assertTrue (type(path) == 'string')
-    print(path)
     lu.assertTrue (path:match("test%-album%.json$") ~= nil or path:match("album%.json$") ~= nil or path:match("film%.json$") ~= nil)
     lu.assertEquals(roll.frameCount, 4)
     lu.assertEquals (folder, folder1)
