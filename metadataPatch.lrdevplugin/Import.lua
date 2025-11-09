@@ -11,14 +11,14 @@ local LrBinding = import 'LrBinding'
 local log = require 'Logger' ("import")
 require 'Use'
 
-local FilmShotsMetadata = use 'analog.FilmShotsMetadata'
+local AnalogMetadata = use 'analog.AnalogMetadata'
 local FilmRoll = use 'analog.FilmRoll'
 local FilmFramesImportDialog = use 'analog.FilmFramesImportDialog'
 local UpdateChecker = use 'analog.UpdateChecker'
 local MetadataBindingTable = use 'analog.MetadataBindingTable'
 
-local function showFilmShotsImportDialog (roll, bindings, updateInfo)  
-    log ("showFilmShotsImportDialog")
+local function showAnalogImportDialog (roll, bindings, updateInfo)  
+    log ("showAnalogImportDialog")
     
     local f = LrView.osFactory()
     local width, height = LrSystemInfo.appWindowSize()
@@ -54,19 +54,22 @@ local function main (context)
     local updateInfo = UpdateChecker.check (LrHttp, nil)
     log ("updateInfo: ", updateInfo)
     
-    local roll, jsonPath, folder = FilmRoll.fromCatalog (LrPathUtils, catalog)    
+    local roll, jsonPath, folder, tempDir = FilmRoll.fromCatalog (LrPathUtils, catalog)    
     log ("roll: ", roll, ": ", jsonPath)
 
     if roll == nil and jsonPath then
         LrDialogs.message ("Couldn't load Film Shots JSON file\n"  .. jsonPath)
+        FilmRoll.cleanupTempDir(tempDir)
         return
     elseif roll == nil and jsonPath == nil then
         LrDialogs.message ("Please select a folder first")
+        FilmRoll.cleanupTempDir(tempDir)
         return
     end
 
     local bindings = MetadataBindingTable.make (context, LrBinding, folder)    
-    local result = showFilmShotsImportDialog (roll, bindings, updateInfo)
+    local result = showAnalogImportDialog (roll, bindings, updateInfo)
+    
     if result == "ok" then
         log ("apply")
         catalog:withPrivateWriteAccessDo (function (context)            
@@ -74,9 +77,13 @@ local function main (context)
         end)
         log ("apply: OK")
     end
+
+    -- Clean up temp directory after dialog closes
+    FilmRoll.cleanupTempDir(tempDir)
+
     log ("DONE")
 end
 
-LrFunctionContext.postAsyncTaskWithContext ("showFilmShotsImportDialog", function (context)
+LrFunctionContext.postAsyncTaskWithContext ("showAnalogImportDialog", function (context)
     main (context)
 end)

@@ -372,15 +372,15 @@ function testWithFrames_Holders()
                                                     args = {
                                                         items = {
                                                             {
-                                                                title = "1A -  (0/0 sec @ 0.0)",
+                                                                title = "1 -  (0/0 sec @ 0.0)",
                                                                 value = 1
                                                             },
                                                             {
-                                                                title = "1B -  (0/0 sec @ 0.0)",
+                                                                title = "2 -  (0/0 sec @ 0.0)",
                                                                 value = 2
                                                             },
                                                             {
-                                                                title = "2A -  (0/0 sec @ 0.0)",
+                                                                title = "3 -  (0/0 sec @ 0.0)",
                                                                 value = 3
                                                             }
                                                         },
@@ -432,15 +432,15 @@ function testWithFrames_Holders()
                                                     args = {
                                                         items = {
                                                             {
-                                                                title = "1A -  (0/0 sec @ 0.0)",
+                                                                title = "1 -  (0/0 sec @ 0.0)",
                                                                 value = 1
                                                             },
                                                             {
-                                                                title = "1B -  (0/0 sec @ 0.0)",
+                                                                title = "2 -  (0/0 sec @ 0.0)",
                                                                 value = 2
                                                             },
                                                             {
-                                                                title = "2A -  (0/0 sec @ 0.0)",
+                                                                title = "3 -  (0/0 sec @ 0.0)",
                                                                 value = 3
                                                             }
                                                         },

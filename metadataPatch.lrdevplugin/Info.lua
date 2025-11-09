@@ -1,4 +1,4 @@
-local Version = {major=1, minor=0, revision=1, build=8}
+local Version = {major=1, minor=0, revision=1, build=9}
 
 local Info = {
 
@@ -16,6 +16,14 @@ local Info = {
 	LrMetadataTagsetFactory = {
 		'MetadataTagset.lua',
 		--'AllMetadataTagset.lua',
+	},
+
+    LrLibraryMenuItems = {
+		{
+			title = 'Import Analog Metadata ...',
+			file = 'Import.lua',
+			enabledWhen = 'photosAvailable',
+		},
 	},
 
 	LrExportFilterProvider = {

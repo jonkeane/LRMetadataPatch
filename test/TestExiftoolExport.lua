@@ -1,6 +1,6 @@
 local lu = require 'luaunit'
 local exiftool = require 'analog.ExiftoolBuilder'
-local FilmShotsMetadata = require 'analog.FilmShotsMetadata'
+local AnalogMetadata = require 'analog.AnalogMetadata'
 local DefaultMetadataMap = require 'analog.DefaultMetadataMap'
 
 local function withGlobal (env, func)
@@ -22,7 +22,7 @@ function testNegativeLongitude()
 
     command = builder:buildCommand (
         "1.jpg",
-        FilmShotsMetadata.make (
+    AnalogMetadata.make (
             {
                 Frame_Latitude = 50.211,
                 Frame_Longitude = -91.3333
@@ -41,7 +41,7 @@ function testNegativeLatitude()
 
     command = builder:buildCommand (
         "1.jpg",
-        FilmShotsMetadata.make (
+    AnalogMetadata.make (
             {
                 Frame_Latitude = -50.211,
                 Frame_Longitude = 91.3333
@@ -61,7 +61,7 @@ function testNegativeLatitudeLongitude()
     command =
         builder:buildCommand(
         "1.jpg",
-        FilmShotsMetadata.make(
+    AnalogMetadata.make(
             {
                 Frame_Latitude = -50.211,
                 Frame_Longitude = -91.3333
@@ -81,7 +81,7 @@ function testNoLocation()
     command =
         builder:buildCommand(
         "1.jpg",
-        FilmShotsMetadata.make(
+    AnalogMetadata.make(
             {
                 Roll_Name = "Roll 1",
                 Frame_Latitude = nil,
@@ -99,7 +99,7 @@ end
 function testEmpty()
     local builder = exiftool.make (DefaultMetadataMap)
 
-    local meta = FilmShotsMetadata.make ({})
+    local meta = AnalogMetadata.make ({})
     local command = builder:buildCommand ("1.jpg", meta)
 
     lu.assertNil (command)
@@ -127,7 +127,7 @@ function testBasic()
         Frame_Shutter = "1/250"
     }
 
-    local meta = FilmShotsMetadata.make (photo)
+    local meta = AnalogMetadata.make (photo)
     local command = builder:buildCommand ("1.jpg", meta)
 
     lu.assertEquals(
@@ -174,7 +174,7 @@ function testBasic_Win()
         Frame_Shutter = "1/250"
     }
 
-    local meta = FilmShotsMetadata.make (photo)
+    local meta = AnalogMetadata.make (photo)
 
     local command = ""
     withGlobal ({
@@ -233,7 +233,7 @@ function testBasic_Mac()
         Frame_Shutter = "1/250"
     }
 
-    local meta = FilmShotsMetadata.make (photo)
+    local meta = AnalogMetadata.make (photo)
 
     local command = ""
     withGlobal ({
@@ -296,7 +296,7 @@ function testCustomMapping_Empty()
         Frame_Shutter = "1/250"
     }
 
-    local meta = FilmShotsMetadata.make (photo)
+    local meta = AnalogMetadata.make (photo)
     local command = builder:buildCommand ("1.jpg", meta)
 
     lu.assertNil (command)
@@ -329,7 +329,7 @@ function testCustomMapping_SkipBadFormat()
         Frame_Shutter = "1/250"
     }
 
-    local meta = FilmShotsMetadata.make (photo)
+    local meta = AnalogMetadata.make (photo)
     local command = builder:buildCommand ("1.jpg", meta)
 
     lu.assertEquals(
@@ -365,7 +365,7 @@ function testCustomMapping_SkipAllBadFormat()
         Frame_Shutter = "1/250"
     }
 
-    local meta = FilmShotsMetadata.make (photo)
+    local meta = AnalogMetadata.make (photo)
     local command = builder:buildCommand ("1.jpg", meta)
 
     lu.assertNil (command)
@@ -398,7 +398,7 @@ function testCustomMapping_Basic()
         Frame_Shutter = "1/250"
     }
 
-    local meta = FilmShotsMetadata.make (photo)
+    local meta = AnalogMetadata.make (photo)
     local command = builder:buildCommand ("1.jpg", meta)
 
     lu.assertEquals(
@@ -429,7 +429,7 @@ function testBasic_EffectiveISO_Box()
         Frame_Shutter = "1/250"
     }
 
-    local meta = FilmShotsMetadata.make (photo)
+    local meta = AnalogMetadata.make (photo)
     local command = builder:buildCommand ("1.jpg", meta)
 
     lu.assertEquals(
@@ -478,7 +478,7 @@ function testBasic_EffectiveISO_Rated()
         Frame_Shutter = "1/250"
     }
 
-    local meta = FilmShotsMetadata.make (photo)
+    local meta = AnalogMetadata.make (photo)
     local command = builder:buildCommand ("1.jpg", meta)
 
     lu.assertEquals(

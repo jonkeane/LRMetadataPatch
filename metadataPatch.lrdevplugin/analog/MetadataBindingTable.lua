@@ -2,16 +2,14 @@ local log = require 'Logger' ("MetadataBindingTable")
 
 require 'Use'
 
-local FilmShotsMetadata = use 'analog.FilmShotsMetadata'
+local AnalogMetadata = use 'analog.AnalogMetadata'
 local LightroomMetadata = use 'analog.LightroomMetadata'
-local FrameDesignator = use 'analog.FrameDesignator'
 
 local function saveMetadata (photo, rollData, frameData)
-    local meta = FilmShotsMetadata.make (photo)
+    local meta = AnalogMetadata.make (photo)
 
     meta:setRoll_UID (rollData.uuid)
     meta:setRoll_Name (rollData.name)
-    meta:setRoll_Mode (rollData.mode)
     meta:setRoll_Status (rollData.status)
     meta:setRoll_Comment (rollData.comment)
     meta:setRoll_Thumbnail (nil)
@@ -20,7 +18,6 @@ local function saveMetadata (photo, rollData, frameData)
     meta:setRoll_FormatName (rollData.formatName)
 
     meta:setFrame_Index (frameData.frameIndex)
-    meta:setFrame_Designator (FrameDesignator.make (frameData.frameIndex, rollData.mode))
     meta:setFrame_LocalTimeIso8601 (frameData.localTime)
     meta:setFrame_Thumbnail (nil)
     meta:setFrame_Latitude (frameData.latitude)
@@ -44,7 +41,7 @@ local function make (context, LrBinding, folder)
         log ("Bind: ", photo.localIdentifier)
         local lrMeta = LightroomMetadata.make (photo)
         if lrMeta:stackPositionInFolder () == 1 then
-            local pluginMeta = FilmShotsMetadata.make (photo)
+            local pluginMeta = AnalogMetadata.make (photo)
             log ("pluginMeta: ", pluginMeta)
 
             local binding = LrBinding.makePropertyTable (context)

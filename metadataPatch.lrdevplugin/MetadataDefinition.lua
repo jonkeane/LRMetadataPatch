@@ -10,20 +10,7 @@ return {
         },
 
         {
-            id = 'Frame_Designator',
-            title = "Frame Designator ",
-            dataType = 'string', 
-            browsable = true,
-            searchable = true,
-            readOnly = true
-        },
-
-        {
             id = 'Roll_UID',
-        },
-
-        {
-            id = "Roll_Mode",
         },
 
         {

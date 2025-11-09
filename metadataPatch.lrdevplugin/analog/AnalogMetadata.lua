@@ -1,4 +1,4 @@
-local log = require 'Logger' ("FilmShotsMetadata")
+local log = require 'Logger' ("AnalogMetadata")
 
 local Metadata = {
 }
@@ -52,13 +52,6 @@ function Metadata:setFrame_Index (value)
     setValue (self.photo, "Frame_Index", value)
 end
 
-function Metadata:Frame_Designator ()
-    return getValue (self.photo, "Frame_Designator")
-end
-function Metadata:setFrame_Designator (value)
-    setValue (self.photo, "Frame_Designator", value)
-end
-
 function Metadata:Roll_UID ()
     return getValue (self.photo, "Roll_UID")
 end
@@ -71,13 +64,6 @@ function Metadata:Roll_Name ()
 end
 function Metadata:setRoll_Name (value)
     setValue (self.photo, "Roll_Name", value)
-end
-
-function Metadata:Roll_Mode ()
-    return getValue (self.photo, "Roll_Mode")
-end
-function Metadata:setRoll_Mode (value)
-    setValue (self.photo, "Roll_Mode", value)
 end
 
 function Metadata:Roll_Status ()
