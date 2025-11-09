@@ -28,4 +28,6 @@ jobs:
                 
       # Runs a single command using the runners shell
       - name: test
+        env:
+          ENABLE_LOGGING: 1
         run: make test
