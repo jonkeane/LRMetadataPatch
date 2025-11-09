@@ -26,12 +26,12 @@ jobs:
         uses: actions/checkout@v2
 
       - name: install
-        run: sudo apt-get install lua5.1
+        run: sudo apt-get install lua5.4
         
       - name: git
         run: |
-          git config --global user.email "aleguna@gmail.com"
-          git config --global user.name "Bip Bop"
+          git config --global user.email "jkeane@gmail.com"
+          git config --global user.name "Jonathan Keane"
                 
       - name: test
         run: make test
