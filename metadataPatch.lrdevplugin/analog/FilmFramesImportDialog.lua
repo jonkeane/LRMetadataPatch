@@ -1,6 +1,5 @@
 require 'Use'
 
-local log = require 'Logger' ("FilmFramesImportDialog")
 local LightroomMetadata = use 'analog.LightroomMetadata'
 
 local function makeFrameMenuItems (roll)
@@ -47,30 +46,19 @@ local function build (args)
     local roll = args.roll
     local bindings = args.bindings
 
-    log("Starting to sort bindings by filename")
-    log("Number of bindings:", #bindings)
-    
     -- Pre-compute filenames for each binding
     local filenameCache = {}
     for i, binding in ipairs(bindings) do
         local filename = LightroomMetadata.make(binding.photo):fileName()
-        log("Pre-computing filename for binding", i, ":", filename)
         filenameCache[binding] = filename
     end
-    
     -- Sort bindings in place by pre-computed filename
     table.sort(bindings, function(a, b)
         local aName = filenameCache[a]
         local bName = filenameCache[b]
-        log("Comparing:", aName, "vs", bName)
         return aName < bName
     end)
     
-    log("Sorted bindings order:")
-    for i, binding in ipairs(bindings) do
-        log(i, ":", filenameCache[binding])
-    end
-
     local f = LrView.osFactory()    local update_snack = f:static_text {
         title = ""
     }
@@ -93,6 +81,19 @@ local function build (args)
     end
 
     local filmFrameItems = makeFrameMenuItems (roll)
+
+    -- Pre-populate each binding's filmFrameIndex with the corresponding frame index (right before UI is built)
+    if roll.frames then
+        for i, pair in ipairs(bindings) do
+            -- Only set default if not already set
+            if not pair.binding.filmFrameIndex then
+                local frame = roll.frames[i]
+                if frame and frame.frameIndex then
+                    pair.binding.filmFrameIndex = frame.frameIndex
+                end
+            end
+        end
+    end
 
     return f:column {
         spacing = f:dialog_spacing(),
