@@ -28,7 +28,7 @@ local Info = {
 
 	LrExportFilterProvider = {
 		{
-			title = "Patch and write metadata",
+			title = "Export analog metadata",
 			file = "Export.lua",
 			id = "export",
 		},
