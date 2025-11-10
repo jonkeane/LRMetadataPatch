@@ -4,8 +4,8 @@ local VersionUtils = use 'analog.VersionUtils'
 local PluginInfo = use 'Info'
 
 -- TODO: change to github
-local VERSION_URL = "https://raw.githubusercontent.com/jonkeane/LRMetadataPatch/refs/heads/main/AnalogMetadata.lrdevplugin/Info.lua"
-local DOWNLOAD_URL = "https://github.com/jonkeane/LRMetadataPatch/releases"
+local VERSION_URL = "https://raw.githubusercontent.com/jonkeane/AnalogMetadata/refs/heads/main/AnalogMetadata.lrdevplugin/Info.lua"
+local DOWNLOAD_URL = "https://github.com/jonkeane/AnalogMetadata/releases"
 
 local function loadstring (str)
     if _G.loadstring then
