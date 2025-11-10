@@ -47,7 +47,7 @@ jobs:
         
       - name: tag
         run: | 
-          git commit metadataPatch.lrdevplugin/Info.lua -m "Bump build ${{ env.VERSION_TAG }}"
+          git commit AnalogMetadata.lrdevplugin/Info.lua -m "Bump build ${{ env.VERSION_TAG }}"
           git tag ${{ env.VERSION_TAG }}
           git push --tags origin
           git push origin
@@ -76,8 +76,8 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.release.outputs.upload_url }} # This pulls from the release step above, referencing it's ID to get its outputs object, which include a `upload_url`. See this blog post for more info: https://jasonet.co/posts/new-features-of-github-actions/#passing-data-to-future-steps 
-          asset_path: ./delivery/metadataPatch.lrplugin-${{ env.VERSION_TAG }}.zip
-          asset_name: metadataPatch.lrplugin-${{ env.VERSION_TAG }}.zip
+          asset_path: ./delivery/AnalogMetadata.lrplugin-${{ env.VERSION_TAG }}.zip
+          asset_name: AnalogMetadata.lrplugin-${{ env.VERSION_TAG }}.zip
           asset_content_type: application/zip
           
           

@@ -179,7 +179,7 @@ function testBasic_Win()
     local command = ""
     withGlobal ({
             {"WIN_ENV", true},
-            {"_PLUGIN", {path = "c:\\Program Files\\Lightroom\\plugins\\metadataPatch.lrplugin"}}
+            {"_PLUGIN", {path = "c:\\Program Files\\Lightroom\\plugins\\AnalogMetadata.lrplugin"}}
         },
         function ()
             local builder = exiftool.make (DefaultMetadataMap)
@@ -190,7 +190,7 @@ function testBasic_Win()
     lu.assertEquals(
         command,
         '"' ..
-        '"c:\\Program Files\\Lightroom\\plugins\\metadataPatch.lrplugin\\exiftool\\windows\\exiftool.exe" ' ..
+    '"c:\\Program Files\\Lightroom\\plugins\\AnalogMetadata.lrplugin\\exiftool\\windows\\exiftool.exe" ' ..
         '-Title="Roll 1" ' ..
         '-Caption="Seaside" ' ..
         '-UserComment="Comment comment comment" ' ..
@@ -238,7 +238,7 @@ function testBasic_Mac()
     local command = ""
     withGlobal ({
             {"MAC_ENV", true},
-            {"_PLUGIN", {path = "/Applications/Adobe Photoshop Lightroom 5.app/Contents/PlugIns/metadataPatch.lrplugin"}}
+            {"_PLUGIN", {path = "/Applications/Adobe Photoshop Lightroom 5.app/Contents/PlugIns/AnalogMetadata.lrplugin"}}
         },
         function ()
             local builder = exiftool.make (DefaultMetadataMap)
@@ -248,7 +248,7 @@ function testBasic_Mac()
 
     lu.assertEquals(
         command,
-        '"/Applications/Adobe Photoshop Lightroom 5.app/Contents/PlugIns/metadataPatch.lrplugin/exiftool/macos/exiftool" ' ..
+    '"/Applications/Adobe Photoshop Lightroom 5.app/Contents/PlugIns/AnalogMetadata.lrplugin/exiftool/macos/exiftool" ' ..
         '-Title="Roll 1" ' ..
         '-Caption="Seaside" ' ..
         '-UserComment="Comment comment comment" ' ..

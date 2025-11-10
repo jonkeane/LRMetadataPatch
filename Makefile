@@ -2,8 +2,8 @@ LUAC ?= luac5.4
 LUA ?= lua5.4
 DELIVERY_DIR ?= ./delivery
 
-DEV_PLUGIN = metadataPatch.lrdevplugin
-REL_PLUGIN = metadataPatch.lrplugin
+DEV_PLUGIN = AnalogMetadata.lrdevplugin
+REL_PLUGIN = AnalogMetadata.lrplugin
 
 INFO_FILE = ${DEV_PLUGIN}/Info.lua
 
