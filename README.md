@@ -3,6 +3,10 @@ A Lightroom plugin for matching analog film metadata and exporting it to files. 
 
 ![Screenshot showing the interface for matching frames from crown and flint](./img/screenshot.png)
 
+## How to use
+
+Export your roll with the "Export for ExifTool" option. Then take the zip that produces and put it in the folder with the scans you want to match it to. Then use `Library > Plug-in Extras > Import Analog Metadata ...` while you have the folder open in Lightroom. The plugin will match the frames based on filename and let you review the matches before applying the metadata to the photos.
+
 ## Features
 
 ### Metadata Import
